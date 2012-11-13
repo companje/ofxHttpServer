@@ -42,9 +42,9 @@ public:
 class ofxHTTPServerListener{
 public:
 	virtual ~ofxHTTPServerListener(){}
-	virtual void getRequest(ofxHTTPServerResponse & response)=0;
-	virtual void postRequest(ofxHTTPServerResponse & response)=0;
-	virtual void fileNotFound(ofxHTTPServerResponse & response)=0;
+	virtual void getRequest(ofxHTTPServerResponse & response) {};
+	virtual void postRequest(ofxHTTPServerResponse & response) {};
+	virtual void fileNotFound(ofxHTTPServerResponse & response) {};
 };
 
 

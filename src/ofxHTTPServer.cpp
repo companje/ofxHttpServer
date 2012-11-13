@@ -54,8 +54,7 @@ int ofxHTTPServer::print_out_key (void *cls, enum MHD_ValueKind kind, const char
 int ofxHTTPServer::get_get_parameters (void *cls, enum MHD_ValueKind kind, const char *key, const char *value)
 {
 	connection_info *con_info = (connection_info*) cls;
-	if(key!=NULL && value!=NULL)
-	con_info->fields[key] = value;
+	if(key!=NULL && value!=NULL) con_info->fields[key] = value;
 	return MHD_YES;
 }
 
@@ -183,7 +182,9 @@ ofxHTTPServer::ofxHTTPServer() {
 	maxClients = 100;
 	numClients = 0;
 	maxActiveClients = 4;
-	uploadDir = ofToDataPath("",true);
+//	uploadDir = ofToDataPath("",true);
+    uploadDir = ofToDataPath("/",true);
+
 	http_daemon = NULL;
 	port = 8888;
 	listener = NULL;
@@ -267,6 +268,8 @@ int ofxHTTPServer::answer_to_connection(void *cls,
 	int ret = MHD_HTTP_SERVICE_UNAVAILABLE;
 
 
+//    cout << "url: " << url << endl;
+    
 	// if the extension of the url is that set to the callback, call the events to generate the response
 	if(instance.callbackExtensionSet && strurl.size()>instance.callbackExtension.size() && strurl.substr(strurl.size()-instance.callbackExtension.size())==instance.callbackExtension){
 
@@ -274,18 +277,20 @@ int ofxHTTPServer::answer_to_connection(void *cls,
 
 		ofxHTTPServerResponse response;
 		response.url = strurl;
-
+//        cout << "method: " << strmethod << " url: " << url << endl;
 
 		if(strmethod=="GET"){
 			response.requestFields = con_info->fields;
 			if(instance.listener) instance.listener->getRequest(response);
 			//ofNotifyEvent(instance.getEvent,response);
+
 			if(response.errCode>=300 && response.errCode<400){
 				ret = send_redirect(connection, response.location.c_str(), response.errCode);
 			}else{
 				ret = send_page(connection, response.response.size(), response.response.getBinaryBuffer(), response.errCode, response.contentType);
 			}
 		}else if (strmethod=="POST"){
+
 			if (*upload_data_size != 0){
 				ret = MHD_post_process(con_info->postprocessor, upload_data, *upload_data_size);
 				*upload_data_size = 0;
@@ -335,6 +340,7 @@ int ofxHTTPServer::answer_to_connection(void *cls,
 
 				cerr << "Error: file could not be opened trying to serve 404.html" << endl;
 				ofFile file404("404.html");
+                //cout << file404.getFileName() << endl;
 				ofBuffer buf;
 				file404 >> buf;
 				send_page(connection, buf.size(), buf.getBinaryBuffer(), MHD_HTTP_NOT_FOUND);
