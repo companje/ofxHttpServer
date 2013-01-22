@@ -323,9 +323,11 @@ int ofxHTTPServer::answer_to_connection(void *cls,
 
 	// if the extension of the url is any other try to serve a file
 	}else{
-		ofLogVerbose("ofxHttpServer") << method << " serving from filesystem: " << url << endl;
+		ofLogVerbose("ofxHttpServer") << method << " serving from filesystem: " << strurl << endl;
 
-		ofFile file(instance.fsRoot + url,ofFile::ReadOnly,true);
+        if (strurl=="/") strurl = "/index.html";
+        
+		ofFile file(instance.fsRoot + strurl,ofFile::ReadOnly,true);
 		if(!file.exists()){
 			ofxHTTPServerResponse response;
 			response.errCode = 404;
@@ -338,9 +340,10 @@ int ofxHTTPServer::answer_to_connection(void *cls,
 				ret = send_page(connection, response.response.size(), response.response.getBinaryBuffer(), response.errCode);
 			}else{
 
-				cerr << "Error: file could not be opened trying to serve 404.html" << endl;
-				ofFile file404("404.html");
-                //cout << file404.getFileName() << endl;
+				cerr << "Error: file could not be opened ("<<strurl<<") trying to serve 404.html" << endl;
+				//ofFile file404("404.html");
+                ofFile file404(instance.fsRoot + "/404.html",ofFile::ReadOnly,true);
+                //cout << "404: " << file404.getFileName() << endl;
 				ofBuffer buf;
 				file404 >> buf;
 				send_page(connection, buf.size(), buf.getBinaryBuffer(), MHD_HTTP_NOT_FOUND);
@@ -349,11 +352,11 @@ int ofxHTTPServer::answer_to_connection(void *cls,
 		}else{
 			ofBuffer buf;
 			file >> buf;
-			ofLogVerbose("ofxHttpServer") << "response: file " << instance.fsRoot << url << " of size " << buf.size() << endl;
+			ofLogVerbose("ofxHttpServer") << "response: file " << instance.fsRoot << strurl << " of size " << buf.size() << endl;
 			ret = send_page(connection, buf.size(), buf.getBinaryBuffer(), MHD_HTTP_OK);
 		}
 	}
-
+    
 	return ret;
 
 }
